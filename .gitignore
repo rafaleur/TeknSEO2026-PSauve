@@ -1,0 +1,39 @@
+# Environnement virtuel — plusieurs Go avec torch.
+# Il se reconstruit avec requirements.txt (voir README.md).
+.venv/
+venv/
+env/
+
+# Artefacts Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# Poids de modèles, si jamais ils atterrissent ici plutôt que dans le
+# cache Hugging Face
+*.safetensors
+*.gguf
+*.bin
+
+# Cache Hugging Face, s'il est redirigé dans le dépôt
+.cache/
+hf_cache/
+
+# Rapports produits par --json : propres à chaque machine et à chaque run.
+# (brand_probe.ipynb est du JSON mais porte l'extension .ipynb : non concerné.)
+*.json
+
+# Secrets — jamais de jeton Hugging Face dans l'historique
+.env
+*.token
+
+# Système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Notebooks : sorties exécutées
+.ipynb_checkpoints/

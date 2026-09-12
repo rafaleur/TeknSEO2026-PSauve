@@ -1,0 +1,17 @@
+# brand_probe — dépendances.
+#
+# ⚠️ torch n'est PAS ici : il s'installe séparément, avec le canal adapté à
+# votre machine, sinon pip télécharge 2,5 Go de CUDA inutile sur un portable.
+#
+#   CPU (portable, modèles 1–2 Md) :
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   GPU NVIDIA (modèles 7–9 Md) :
+#     pip install torch --index-url https://download.pytorch.org/whl/cu126
+#
+# Le script n'a aucune autre dépendance : la partie corpus n'utilise que la
+# bibliothèque standard.
+
+transformers>=4.57
+accelerate>=1.0
+huggingface_hub>=0.35
+safetensors>=0.6
