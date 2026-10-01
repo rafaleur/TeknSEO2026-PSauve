@@ -1,0 +1,10 @@
+# Réglages de l'interface (brand_probe_app.py).
+
+[server]
+# Pas de rechargement à chaud : personne n'édite le script en l'utilisant, et
+# le guetteur de fichiers de Streamlit fouille les modules de transformers à
+# chaque clic (lent, et bruyant dans le terminal).
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false

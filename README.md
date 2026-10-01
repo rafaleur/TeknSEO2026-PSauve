@@ -2,7 +2,8 @@
 
 Kit à emporter de la conférence TeknSEO **« GEO : le vrai du faux, mesuré par
 les log-probs »**. Un seul script, sans nos données ni nos verdicts, qui
-applique la méthode du talk à *votre* marque.
+applique la méthode du talk à *votre* marque — en ligne de commande, dans
+Colab, ou dans une petite interface.
 
 Dépôt : https://github.com/rafaleur/TeknSEO2026-PSauve — ou, sans rien installer,
 [ouvrir le notebook dans Colab](https://colab.research.google.com/github/rafaleur/TeknSEO2026-PSauve/blob/main/brand_probe.ipynb).
@@ -64,6 +65,24 @@ bf16 natif (Ryzen AI, Core Ultra, Xeon récents : AVX-512 BF16 ou AMX) et
 sur un Ryzen 7 3700X, 8 cœurs). La première marque est la plus longue : les
 quatre leurres ne sont mesurés qu'une fois par modèle, quel que soit le nombre
 de marques.
+
+## L'interface
+
+La même mesure, à l'écran, pour qui préfère un formulaire à une ligne de
+commande :
+
+```bash
+streamlit run brand_probe_app.py
+```
+
+Le navigateur s'ouvre sur http://localhost:8501 : marques, catégorie,
+langue, modèles, corpus, puis **Mesurer**. Le rapport s'affiche en
+graphiques : la marge de la marque face aux noms inventés et au plancher, les
+termes associés, la fréquence par corpus et les mots qui l'accompagnent ;
+le rapport texte et le JSON sont dans un volet dépliable. Les modèles restent
+chargés entre deux mesures, les leurres d'une catégorie ne sont mesurés
+qu'une fois, et un bouton libère la mémoire. C'est `brand_probe.py` qui
+calcule : l'interface n'ajoute rien à la méthode.
 
 ## Lire le rapport
 
