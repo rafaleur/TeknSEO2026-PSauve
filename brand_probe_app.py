@@ -367,7 +367,7 @@ def show_brand_detail(r: bp.BrandReport) -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="brand_probe — le kit à emporter", layout="wide")
+    st.set_page_config(page_title="brand_probe — kit de démo TeknSEO", layout="wide")
     _html(CSS)
 
     sb = st.sidebar
