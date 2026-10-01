@@ -97,22 +97,22 @@ Figtree, embarquée pour tourner hors ligne).
   PRÉSENCE DANS LES MODÈLES : 1/1 au-dessus du plancher des noms inventés
 
   modèle       marge  plancher  nom parlant  verdict
-  qwen-1.5b    +2.17     +0.10        -0.38  présente
+  qwen-1.5b    +2.32     -0.18        -0.52  présente
   (nom parlant = « Rankzuri », inventé, qui annonce la catégorie : ce que le nom seul rapporte)
 
   Termes associés dans qwen-1.5b (lift en nats face aux noms inventés) :
-    keyword (+9.4), crawler (+8.8), SEO (+8.7), search (+6.7), Google (+5.3) …
+    keyword (+9.3), crawler (+8.8), SEO (+8.7), search (+6.7), Google (+5.3) …
 
   CORPUS DE PRÉ-ENTRAÎNEMENT (infini-gram) :
   index    occurrences  par milliard   contenu
-  C4            18,309          12.3   Common Crawl nettoyé, avril 2019
+  C4            18,309         960.5   Common Crawl nettoyé, avril 2019
   …
-  Mots qui accompagnent « Ahrefs » (50 extraits) :
-    seo (32), content (31), search (28), google (27), backlinks (16) …
+  Mots qui accompagnent « Ahrefs » (150 extraits, nombre d'extraits) :
+    seo (87), google (77), search (77), tools (75), site (70) …
 ```
 
-- **Marge** : log-probabilité moyenne de « *Marque* is a software tool for
-  search engine optimization » moins celle de la meilleure des quatre fausses
+- **Marge** : log-probabilité moyenne de « *Marque* is a tool for search
+  engine optimization » moins celle de la meilleure des quatre fausses
   phrases (« … is a brand of Italian coffee », « … a species of freshwater
   fish », …). En nats. Positif = le modèle préfère la vraie catégorie.
 - **Plancher** : la marge la plus haute obtenue par quatre noms inventés

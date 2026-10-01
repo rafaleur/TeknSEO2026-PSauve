@@ -54,7 +54,7 @@ FS_AXIS = 22
 MASTHEAD = "Pierre Sauvé"
 MASTHEAD_ROLE = "Consultant SEO · GEO · Formateur"
 MASTHEAD_EVENT = "TEKNSEO · 2026"
-MASTHEAD_FOOT = "TeknSEO · GEO, le vrai du faux · le kit à emporter"
+MASTHEAD_FOOT = "TeknSEO · Conférence de Pierre Sauvé · Theblackroom.io · Kit de démo"
 
 CSS = f"""
 <style>
@@ -373,7 +373,7 @@ def main() -> None:
     sb = st.sidebar
     sb.header("Mesurer")
     raw = sb.text_area("Marques (une par ligne) — la vôtre et ses concurrentes",
-                       "Ahrefs\nOncrawl\nSemrush", height=120, key="brands")
+                       "Screaming Frog\nOncrawl\nBotify", height=120, key="brands")
     brands = [b.strip() for b in raw.splitlines() if b.strip()]
     lang = sb.radio("Sondes", ["en", "fr"], horizontal=True, key="lang",
                     format_func=lambda x: {"en": "anglais (langue du panel)", "fr": "français"}[x])
@@ -411,7 +411,7 @@ def main() -> None:
         sb.caption("Mémoire libérée.")
 
     _masthead()
-    _title("Le kit à emporter", "Votre marque, dans les poids")
+    _title("Kit de démo de la conférence", "Votre marque, dans les poids")
 
     if not go:
         st.markdown("Plusieurs marques, une catégorie, et ce que les poids en savent : la marge de "
@@ -419,7 +419,7 @@ def main() -> None:
                     "dans C4, DCLM et Dolma. Laquelle le modèle connaît-il le mieux ?")
         for b in brands:
             st.markdown(f"### {b}")
-        _html('<div class="limite">LIMITE — ce kit mesure la présence dans les poids, pas la citation '
+        _html('<div class="limite">Note : ce kit mesure la présence dans les poids, pas la citation '
               "par ChatGPT ou Gemini : corrélation mesurée entre les deux, +0,1. Être dans les poids "
               "est une condition d'entrée, pas une cause.</div>")
         _html(f'<div class="footrule">{MASTHEAD_FOOT}</div>')

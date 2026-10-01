@@ -6,7 +6,7 @@ la méthode présentée à TeknSEO, « GEO : le vrai du faux, mesuré par les
 log-probs », à une marque de votre choix :
 
   1. PRÉSENCE dans le modèle — la marge de catégorie : le modèle préfère-t-il
-     « Ahrefs is a software tool for search engine optimization » à
+     « Ahrefs is a tool for search engine optimization » à
      « Ahrefs is a brand of Italian coffee » ? On mesure la même marge sur des
      noms inventés (leurres) dans le même run : c'est le plancher. Une marque
      sous le plancher est indistinguable d'un nom qui n'existe pas.
@@ -80,7 +80,9 @@ CLOUD_MODELS = ["qwen-7b", "llama-8b", "gemma-9b"]
 # « is a… » ou « est un… ». La marque est collée devant.
 CATEGORIES: dict[str, dict[str, str]] = {
     "en": {
-        "seo": " is a software tool for search engine optimization",
+        # Plus courte que celle du panel (« is a software tool for … ») : le kit
+        # s'adresse aussi aux éditeurs qui ne se disent pas « logiciel ».
+        "seo": " is a tool for search engine optimization",
         "analytics": " is a software tool for website analytics",
         "email": " is a software platform for email marketing",
         "support": " is a software platform for customer support",
