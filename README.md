@@ -2,7 +2,10 @@
 
 Kit à emporter de la conférence TeknSEO **« GEO : le vrai du faux, mesuré par
 les log-probs »**. Un seul script, sans nos données ni nos verdicts, qui
-applique la méthode du talk à *votre* marque :
+applique la méthode du talk à *votre* marque.
+
+Dépôt : https://github.com/rafaleur/TeknSEO2026-PSauve — ou, sans rien installer,
+[ouvrir le notebook dans Colab](https://colab.research.google.com/github/rafaleur/TeknSEO2026-PSauve/blob/main/brand_probe.ipynb).
 
 | ce que vous obtenez | comment c'est mesuré |
 |---|---|
@@ -21,6 +24,7 @@ applique la méthode du talk à *votre* marque :
 ## Installation (5 minutes, CPU suffisant)
 
 ```bash
+git clone https://github.com/rafaleur/TeknSEO2026-PSauve && cd TeknSEO2026-PSauve
 python -m venv .venv && source .venv/bin/activate      # Windows : .venv\Scripts\activate
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
@@ -133,9 +137,10 @@ termes du corpus avant de croire le comptage.
 2023, Dolma de début 2024. Une marque récente, ou rebaptisée (Sendinblue →
 Brevo en 2023), n'y est pas ou presque. Ce n'est pas un bug du script :
 c'est la réalité de ce sur quoi les modèles ont appris, et c'est ce qui
-explique que Brevo soit sous le plancher de six modèles ouverts tout en étant
-cité dans 83 % des réponses de ChatGPT sur l'emailing — la citation vient de
-la recherche web, pas des poids.
+explique que Brevo soit sous le plancher des noms inventés pour Qwen 1.5B et
+Llama 1B (les 7–9 Md, entraînés plus tard, la connaissent, faiblement : +0,4
+à +0,8 nat) tout en étant cité dans 83 % des réponses de ChatGPT sur
+l'emailing — la citation vient de la recherche web, pas des poids.
 
 **3. Les petits modèles ne sont pas ChatGPT.** Les trois modèles de scène
 (1 à 2,6 milliards de paramètres) connaissent moins de marques que les
@@ -229,4 +234,4 @@ signe, validation contre 1 100 réponses ChatGPT et Gemini) est celui de la
 conférence ; le kit reprend à l'identique ses catégories, ses fausses
 catégories, ses leurres et ses révisions de modèles, et un test l'y vérifie.
 
-Licence du kit : MIT. Les modèles restent sous leurs licences respectives.
+Licence du kit : MIT (fichier `LICENSE`). Les modèles restent sous leurs licences respectives.
