@@ -160,6 +160,15 @@ INDEXES: dict[str, dict] = {
 BASKET = ("the", "and", "of", "to", "in")
 API_TIMEOUT_S = 40.0
 API_MIN_INTERVAL_S = 0.25  # service public gratuit : on ne le martèle pas
+# Requêtes CNF (« A AND B ») : par défaut l'API n'examine que 100 tokens
+# autour de chaque clause et sous-échantillonne toute clause au-delà de
+# 50 000 occurrences, ce qui renvoie souvent 0 (sa documentation le dit).
+# On pousse les deux bornes à leur maximum ; le comptage reste approché.
+CNF_PARAMS = {"max_clause_freq": 500_000, "max_diff_tokens": 1000}
+
+
+def is_cnf(query: str) -> bool:
+    return " AND " in query or " OR " in query
 
 STOPWORDS = set("""
 the a an and or of to in for on with is are was were be been being it its this
@@ -212,6 +221,8 @@ class CorpusResult:
     terms: list[dict] = field(default_factory=list)  # [{term, docs}]
     docs_sampled: int = 0
     note: str = ""
+    approx: bool = False  # comptage approché par l'API (requête CNF)
+    whole_word: dict[str, int] = field(default_factory=dict)  # par index, occurrences en mot entier
 
 
 @dataclass
@@ -247,7 +258,9 @@ class Scorer:
 
         if self._device:
             return torch.device(self._device)
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # is_available() peut être vrai avec zéro device visible (CUDA_VISIBLE_DEVICES="").
+        cuda = torch.cuda.is_available() and torch.cuda.device_count() > 0
+        return torch.device("cuda" if cuda else "cpu")
 
     def _dtype(self):
         import torch
@@ -481,7 +494,15 @@ class InfiniGram:
         raise RuntimeError(f"infini-gram injoignable après 4 essais : {err}")
 
     def count(self, index: str, query: str) -> int:
-        return int(self.post({"index": index, "query_type": "count", "query": query})["count"])
+        return self.count_approx(index, query)[0]
+
+    def count_approx(self, index: str, query: str) -> tuple[int, bool]:
+        """Occurrences, et True si l'API a approximé (requête CNF sous-échantillonnée)."""
+        payload = {"index": index, "query_type": "count", "query": query}
+        if is_cnf(query):
+            payload.update(CNF_PARAMS)
+        data = self.post(payload)
+        return int(data["count"]), bool(data.get("approx"))
 
     def basket_total(self, index: str) -> float:
         if index not in self._basket:
@@ -496,8 +517,11 @@ class InfiniGram:
 
     def search_docs(self, index: str, query: str, maxnum: int = 10,
                     max_disp_len: int = 400) -> dict:
-        return self.post({"index": index, "query_type": "search_docs", "query": query,
-                          "maxnum": maxnum, "max_disp_len": max_disp_len})
+        payload = {"index": index, "query_type": "search_docs", "query": query,
+                   "maxnum": maxnum, "max_disp_len": max_disp_len}
+        if is_cnf(query):
+            payload.update(CNF_PARAMS)
+        return self.post(payload)
 
 
 def glued_share(ntd: dict) -> tuple[float | None, str | None]:
@@ -537,28 +561,46 @@ def measure_corpus(ig: InfiniGram, brand: str, query: str | None = None,
                    top: int = 20, pages: int = 5, log=None) -> CorpusResult:
     query = query or brand
     counts, rates = {}, {}
+    approx = False
+    count_approx = getattr(ig, "count_approx", None) or (lambda i, q: (ig.count(i, q), False))
     for idx in INDEXES:
-        counts[idx] = ig.count(idx, query)
+        counts[idx], a = count_approx(idx, query)
+        approx = approx or a
         rates[idx] = round(counts[idx] / ig.basket_total(idx) * 1e9, 2)
         if log:
-            log(f"    {INDEXES[idx]['label']:6s} {counts[idx]:>10,d} occurrences")
+            shown = f"{counts[idx]:,d}"
+            log(f"    {INDEXES[idx]['label']:6s} {('≈' + shown) if a else shown:>10s} occurrences")
 
     share, example = None, None
-    if " AND " not in query and " OR " not in query:
-        # Le collage se mesure sur l'index le plus gros où la marque apparaît.
-        best = max(INDEXES, key=lambda i: counts[i])
-        if counts[best]:
-            share, example = glued_share(ig.next_tokens(best, query))
+    whole_word: dict[str, int] = {}
+    if not is_cnf(query):
+        # Le collage se mesure index par index (la part varie du simple au
+        # décuple entre C4 et Dolma) ; celle du plus gros index est rapportée.
+        shares: dict[str, tuple[float, str | None]] = {}
+        for idx, n in counts.items():
+            if n:
+                s, ex = glued_share(ig.next_tokens(idx, query))
+                if s is not None:
+                    shares[idx] = (s, ex)
+        if shares:
+            best = max(shares, key=lambda i: counts[i])
+            share, example = shares[best]
             if example:
                 example = f"{query}|{example}"
+            whole_word = {idx: round(n * (1 - shares[idx][0])) if idx in shares else n
+                          for idx, n in counts.items()}
+
+    def _whole() -> str:
+        return " · ".join(f"{INDEXES[i]['label']} {whole_word[i]:,d}" for i in INDEXES)
 
     note = ""
     terms: list[dict] = []
     sampled = 0
     if share is not None and share > 0.5:
-        note = (f"{share:.0%} des occurrences sont un autre mot ({example}) : "
-                "comptages non fiables, termes non calculés. Précisez la requête "
-                "avec --corpus-query (ex. \"Brevo AND emailing\").")
+        note = (f"{share:.1%} des occurrences sont un autre mot ({example}). En mot entier, "
+                f"environ : {_whole()}. Termes non calculés : les extraits seraient ceux de "
+                "l'autre mot. Une requête « A AND B » n'y change rien, le nom collé la "
+                "satisfait aussi ; elle sert aux homonymes (ex. \"MAIF AND assurance\").")
     else:
         seen: set = set()
         docs: list[dict] = []
@@ -576,9 +618,10 @@ def measure_corpus(ig: InfiniGram, brand: str, query: str | None = None,
         sampled = len(docs)
         terms = [{"term": w, "docs": n} for w, n in cooccurrences(docs, brand).most_common(top)]
         if share is not None and share > 0.1:
-            note = f"{share:.0%} des occurrences sont un autre mot ({example}) : comptages surestimés d'autant"
+            note = (f"{share:.1%} des occurrences sont un autre mot ({example}) : "
+                    f"en mot entier, environ {_whole()}")
     return CorpusResult(query, counts, rates, None if share is None else round(share, 3),
-                        example, terms, sampled, note)
+                        example, terms, sampled, note, approx, whole_word)
 
 
 # ==========================================================================
@@ -666,8 +709,12 @@ def render(report: BrandReport) -> str:
         if c.counts:
             L.append(f"  {'index':7s} {'occurrences':>12s} {'par milliard':>13s}   contenu")
             for idx, n in c.counts.items():
-                L.append(f"  {INDEXES[idx]['label']:7s} {n:>12,d} {c.rates[idx]:>13.1f}   "
+                shown = f"≈{n:,d}" if c.approx else f"{n:,d}"
+                L.append(f"  {INDEXES[idx]['label']:7s} {shown:>12s} {c.rates[idx]:>13.1f}   "
                          f"{INDEXES[idx]['note']}")
+            if c.approx:
+                L.append("  (≈ comptage approché : documents où les termes voisinent à moins de "
+                         "1 000 tokens, clauses fréquentes sous-échantillonnées par l'API)")
         if c.note:
             L += ["", f"  ⚠ {c.note}"]
         if c.terms:
@@ -691,8 +738,9 @@ def main(argv: list[str] | None = None) -> int:
                     help=f"parmi {', '.join(MODELS)} (défaut : qwen-1.5b, sans licence)")
     ap.add_argument("--no-model", action="store_true", help="corpus seulement")
     ap.add_argument("--no-corpus", action="store_true", help="modèles seulement (hors ligne)")
-    ap.add_argument("--corpus-query", help="requête infini-gram à la place du nom, "
-                    "syntaxe « A AND B » pour désambiguïser")
+    ap.add_argument("--corpus-query", help="requête infini-gram à la place du nom : "
+                    "« A AND B » pour un homonyme (ex. \"MAIF AND assurance\") ; "
+                    "ne corrige pas un collage de tokens")
     ap.add_argument("--top", type=int, default=12, help="nombre de termes affichés")
     ap.add_argument("--json", help="écrire le rapport complet dans ce fichier")
     ap.add_argument("--list-categories", action="store_true")

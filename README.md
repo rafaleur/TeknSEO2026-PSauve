@@ -57,10 +57,13 @@ python brand_probe.py "Ahrefs" --no-corpus
 python brand_probe.py --list-categories
 ```
 
-Durées mesurées sur un portable 4 cœurs, sans GPU : chargement de qwen-1.5b
-**60 à 220 s** selon le disque, puis **15 à 20 s par marque** (la marque, quatre
-leurres, deux amorces de termes). Les leurres ne sont mesurés qu'une fois par
-modèle, quel que soit le nombre de marques.
+Durées mesurées sans GPU, poids déjà téléchargés : chargement de qwen-1.5b
+**30 à 220 s** selon le disque, puis, par marque, **15 à 20 s** sur un CPU à
+bf16 natif (Ryzen AI, Core Ultra, Xeon récents : AVX-512 BF16 ou AMX) et
+**50 à 90 s** sur un CPU AVX2 classique, où le script calcule en fp32 (mesuré
+sur un Ryzen 7 3700X, 8 cœurs). La première marque est la plus longue : les
+quatre leurres ne sont mesurés qu'une fois par modèle, quel que soit le nombre
+de marques.
 
 ## Lire le rapport
 
@@ -121,17 +124,31 @@ modèle, quel que soit le nombre de marques.
 **1. Le collage de tokens.** infini-gram apparie des séquences de tokens, pas
 des mots. « Brevo » compte 3 421 occurrences dans C4… dont 98 % sont
 « Brevo**ort** » (un éditeur de Marvel) et « Brevo**ortia** » (un poisson).
-Le script le détecte (distribution du token suivant), corrige la lecture et,
-au-delà de 50 %, refuse de calculer des termes. Précisez alors la requête :
+Le script le détecte (distribution du token suivant), donne le comptage en
+mot entier (Brevo seul : 53 dans C4, 228 dans DCLM, 621 dans Dolma) et,
+au-delà de 50 %, refuse de calculer des termes : les extraits seraient ceux
+de l'autre mot. Une requête « Brevo AND emailing » n'y change rien, nous
+l'avons vérifié : « Brevoort » la satisfait aussi, et la centaine de
+documents qu'elle renvoie parlent tous de l'éditeur.
+
+Le remède par requête existe pour l'autre cas, l'**homonyme** entier :
+« MAIF » dans les corpus anglophones est surtout le *Maryland Automobile
+Insurance Fund* (les mots qui l'accompagnent le disent : « maryland »,
+« drivers », « auto »). Une requête « A AND B » ne garde que les documents où
+les deux termes voisinent :
 
 ```bash
-python brand_probe.py "Brevo" --category email --corpus-query "Brevo AND emailing"
+python brand_probe.py "MAIF" --category assurance --lang fr --corpus-query "MAIF AND assurance"
 ```
 
-Même remède pour un **homonyme** entier : « MAIF » dans les corpus anglophones
-est surtout le *Maryland Automobile Insurance Fund* (les mots qui
-l'accompagnent le disent : « maryland », « drivers », « auto »). Lisez les
-termes du corpus avant de croire le comptage.
+Le AND déplace l'équilibre, il ne purifie pas : sur Dolma, 21 extraits sur
+30 parlent alors de l'assureur, contre 1 sur 30 sans le AND, mais dans C4 et
+DCLM, anglophones, le fonds du Maryland domine toujours et les termes le
+montrent (« maryland », « auto »). Le comptage est marqué « ≈ » : l'API
+compte des documents, pas des occurrences, à moins de 1 000 tokens d'écart,
+et sous-échantillonne les clauses fréquentes. Il situe un ordre de grandeur,
+il ne se compare pas au « par milliard » d'une marque non ambiguë. Dans tous
+les cas, lisez les termes du corpus avant de croire le comptage.
 
 **2. Les corpus sont datés.** C4 est un instantané d'avril 2019, DCLM de
 2023, Dolma de début 2024. Une marque récente, ou rebaptisée (Sendinblue →
