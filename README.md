@@ -75,14 +75,19 @@ commande :
 streamlit run brand_probe_app.py
 ```
 
-Le navigateur s'ouvre sur http://localhost:8501 : marques, catégorie,
-langue, modèles, corpus, puis **Mesurer**. Le rapport s'affiche en
-graphiques : la marge de la marque face aux noms inventés et au plancher, les
-termes associés, la fréquence par corpus et les mots qui l'accompagnent ;
+Le navigateur s'ouvre sur http://localhost:8501 : vos marques, une par
+ligne — la vôtre et ses concurrentes —, la catégorie, la langue, les modèles,
+les corpus, puis **Mesurer**. Pour chaque modèle, les marques sont classées
+sur la marge de catégorie, face au nom parlant, au meilleur nom inventé et au
+plancher : laquelle le modèle connaît-il le mieux ? Une barre pleine est une
+marque présente ; sous le plancher, elle se vide. Puis, marque par marque,
+les termes associés, la fréquence par corpus et les mots qui l'accompagnent ;
 le rapport texte et le JSON sont dans un volet dépliable. Les modèles restent
 chargés entre deux mesures, les leurres d'une catégorie ne sont mesurés
 qu'une fois, et un bouton libère la mémoire. C'est `brand_probe.py` qui
-calcule : l'interface n'ajoute rien à la méthode.
+calcule : l'interface n'ajoute rien à la méthode. La charte est celle de la
+démo de scène : `.streamlit/config.toml` (thème) et `static/` (la police
+Figtree, embarquée pour tourner hors ligne).
 
 ## Lire le rapport
 

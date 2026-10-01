@@ -1,6 +1,41 @@
-# Réglages de l'interface (brand_probe_app.py).
+# Thème de l'interface (brand_probe_app.py) : celui de la démo de scène de la
+# conférence — noir et blanc, Figtree, angles vifs, comme les slides.
+#
+# Configuré ici plutôt qu'en CSS injectée : Streamlit colore la barre latérale
+# et les widgets depuis SON thème, pas depuis la feuille de style de la page.
+
+[theme]
+base = "light"
+primaryColor = "#111110"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f3f3f0"
+textColor = "#111110"
+borderColor = "#d7d7d0"
+linkColor = "#111110"
+font = "Figtree, Segoe UI, system-ui, sans-serif"
+headingFont = "Figtree, Segoe UI, system-ui, sans-serif"
+baseRadius = "none"
+showSidebarBorder = true
+
+# Figtree voyage avec le kit (static/), jamais depuis Google Fonts : l'app
+# tourne aussi hors ligne. Deux fichiers, latin et latin étendu.
+[[theme.fontFaces]]
+family = "Figtree"
+url = "app/static/figtree-latin.woff2"
+weight = "300 900"
+style = "normal"
+unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
+
+[[theme.fontFaces]]
+family = "Figtree"
+url = "app/static/figtree-latin-ext.woff2"
+weight = "300 900"
+style = "normal"
+unicodeRange = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
 
 [server]
+# Les deux fichiers de police sont servis depuis static/.
+enableStaticServing = true
 # Pas de rechargement à chaud : personne n'édite le script en l'utilisant, et
 # le guetteur de fichiers de Streamlit fouille les modules de transformers à
 # chaque clic (lent, et bruyant dans le terminal).
